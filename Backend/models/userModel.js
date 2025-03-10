@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     resetPasswordExpire: { type: Date },
     preferredCurrency: { type: String, default: "USD" }, // Preferred currency field
     createdAt: { type: Date, default: Date.now }
-});
+ });
 
 UserSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
