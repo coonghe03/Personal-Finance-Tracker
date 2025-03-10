@@ -1,10 +1,31 @@
 import asyncHandler from 'express-async-handler';
-import User from '../models/User.js';
+import User from '../models/userModel.js';
+import Transaction from '../models/transactionModel.js';
+import Budgets from '../models/budgetModel.js';
+import Reports from '../models/reportModel.js';
 
 // @route   GET /api/admin/users
 export const getAllUsers = asyncHandler(async (req, res) => {
     const users = await User.find().select('-password');
     res.status(200).json({ success: true, data: users });
+});
+
+// @route   GET /api/admin/transactions
+export const getAllTransactions = asyncHandler(async (req, res) => {
+    const transactions = await Transaction.find();
+    res.status(200).json({ success: true, data: transactions });
+});
+
+// @route   GET /api/admin/budgets
+export const getAllBudgets = asyncHandler(async (req, res) => {
+    const budgets = await Budgets.find();
+    res.status(200).json({ success: true, data: budgets });
+});
+
+//@route    GET /api/admin/reports
+export const getAllReports = asyncHandler(async (req, res) => {
+    const reports = await Reports.find();
+    res.status(200).json({ success: true, data: reports });
 });
 
 // @route   GET /api/admin/users/:id

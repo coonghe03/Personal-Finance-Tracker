@@ -1,26 +1,36 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import User from '../models/userModel.js';
 
-export const protect = async (req, res, next) => {
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
+const userAuth = async (req, res, next) => {
+
+
+    //const {token } = req.cookies;
+    const { token } = req.headers;
+    console.log("here it going");
+    console.log(token);
+
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Not Unauthorized Login Again" });
     }
-    if (!token) return res.status(401).json({ message: 'Not authorized, no token' });
+    console.log("Here it passed");
+
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password');
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Not authorized' });
-    }
-};
 
-export const admin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
+        const tokenDecode = jwt.verify(token, process.env.JWT_SECRET)
+
+        if (tokenDecode.id) {
+            req.userId = tokenDecode.id;
+            console.log("Decoded User ID:", req.userId);
+        } else {
+            return res.status(401).json({ success: false, message: "Not Unauthorized Login Again" });
+        }
+
         next();
-    } else {
-        res.status(403).json({ message: 'Admin access only' });
+
+    } catch (error) {
+        res.status(401).json({ success: false, message: "Not Unauthorized Login Again" });
     }
-};
+}
+
+export default userAuth;
