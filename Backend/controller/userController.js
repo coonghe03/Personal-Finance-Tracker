@@ -1,10 +1,10 @@
-import User from '../models/userModel.js'; // Import the User model
-import asyncHandler from 'express-async-handler'; // For handling async errors
-import crypto from 'crypto'; // Import crypto for hashing
+import User from '../models/userModel.js'; 
+import asyncHandler from 'express-async-handler';
+import crypto from 'crypto'; 
+import sendEmail from '../utils/sendEmail.js';
+import nodemailer from 'nodemailer';
 
-// @desc    Register a new user
-// @route   POST /api/users/register
-// @access  Public
+
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body;
 
@@ -17,8 +17,6 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     // Create user
     const user = await User.create({ name, email, password, role });
-
-    // Generate JWT token
     const token = user.getSignedJwtToken();
 
     res.status(201).json({
@@ -33,9 +31,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Login user
-// @route   POST /api/users/login
-// @access  Public
 export const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
@@ -57,8 +52,6 @@ export const loginUser = asyncHandler(async (req, res) => {
         res.status(401);
         throw new Error('Invalid credentials');
     }
-
-    // Generate JWT token
     const token = user.getSignedJwtToken();
 
     res.status(200).json({
@@ -74,9 +67,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get current logged-in user
 // @route   GET /api/users/me
-// @access  Private
 export const getMe = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 
@@ -91,31 +82,31 @@ export const getMe = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Forgot password
 // @route   POST /api/users/forgotpassword
-// @access  Public
 export const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
         res.status(404);
         throw new Error('User not found');
     }
 
-    // Generate reset token
+    // Get password reset token
     const resetToken = user.getResetPasswordToken();
 
-    // Save user with reset token and expiration
+    // Save the user with the reset token
     await user.save({ validateBeforeSave: false });
 
     // Create reset URL
     const resetUrl = `${req.protocol}://${req.get('host')}/api/users/resetpassword/${resetToken}`;
 
-    // Send email
+    // Message to be sent in the email
     const message = `You are receiving this email because you (or someone else) has requested a password reset. Please make a PUT request to: \n\n ${resetUrl}`;
 
     try {
+        // Send the reset email
         await sendEmail({
             email: user.email,
             subject: 'Password Reset Token',
@@ -124,6 +115,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
         res.status(200).json({ success: true, data: 'Email sent' });
     } catch (err) {
+        // If error occurs, reset token fields and save
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save({ validateBeforeSave: false });
@@ -132,6 +124,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         throw new Error('Email could not be sent');
     }
 });
+
 
 // @desc    Reset password
 // @route   PUT /api/users/resetpassword/:resettoken

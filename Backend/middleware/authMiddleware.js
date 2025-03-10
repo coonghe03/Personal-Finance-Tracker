@@ -1,45 +1,30 @@
 import jwt from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler';
-import User from '../models/userModel.js';
 
-// Protect routes
-const protect = asyncHandler(async (req, res, next) => {
-    let token;
-
-    // Check for token in the Authorization header
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            // Extract token from header
-            token = req.headers.authorization.split(' ')[1];
-
-            // Verify token
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // Attach user to the request object
-            req.user = await User.findById(decoded.id).select('-password');
-
-            next();
-        } catch (error) {
-            res.status(401);
-            throw new Error('Not authorized, token failed');
-        }
-    }
+// Admin Authentication Middleware
+const authAdmin = async (req, res, next) => {
+  try {
+    // Extract token from the custom 'atoken' header
+    const { token } = req.headers;
 
     if (!token) {
-        res.status(401);
-        throw new Error('Not authorized, no token');
+      return res.status(401).json({ success: false, message: "Not authorized. Please login again!" });
     }
-});
 
-// Authorize roles
-const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            res.status(403);
-            throw new Error(`User role ${req.user.role} is not authorized to access this route`);
-        }
-        next();
-    };
+    // Decode and verify the token
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded Token:", decodedToken);  // Inspect token content
+
+    // Check if the role is 'admin'
+    if (decodedToken.role !== 'admin') {
+      return res.status(403).json({ success: false, message: "Not authorized. You are not an admin!" });
+    }
+
+    // Proceed to next middleware or route handler if authorized
+    next();
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Something went wrong, please try again later!" });
+  }
 };
 
-export { protect, authorize };
+export default authAdmin;
