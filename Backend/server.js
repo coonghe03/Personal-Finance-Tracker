@@ -11,6 +11,7 @@ import reportRoutes from "./routes/reportRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import goalRoutes from "./routes/goalRoutes.js";
 import systemSettingRoutes from "./routes/systemSettingRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
 
@@ -29,6 +30,8 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/goals", goalRoutes);
 app.use("/api/systems", systemSettingRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
  
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
