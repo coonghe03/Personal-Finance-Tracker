@@ -25,7 +25,7 @@ const options = {
         },
       ],
     },
-    apis: ["./routes/*.js"], // Ensure this path is correct
+    apis: ["./routes/*.js"], 
 };
 
 // Corrected variable name from "swaggerSpec" to "specs"
