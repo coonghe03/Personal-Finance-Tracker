@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import 'dotenv/config';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import connectDB from "./config/mongodb.js";
 import userRoutes from "./routes/userRoutes.js"; 
 import swaggerDocs from "./config/swagger.js";
@@ -14,12 +16,13 @@ import systemSettingRoutes from "./routes/systemSettingRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
-
 const app = express();
 const port = process.env.PORT || 4000;
 connectDB();
 swaggerDocs(app);
 
+app.use(helmet());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(cors());
 app.use(express.json());
 app.use('/api/user', userRoutes); 
