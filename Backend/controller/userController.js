@@ -2,8 +2,6 @@ import User from '../models/userModel.js';
 import asyncHandler from 'express-async-handler';
 import crypto from 'crypto'; 
 import sendEmail from '../utils/sendEmail.js';
-import nodemailer from 'nodemailer';
-
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body;
